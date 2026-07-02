@@ -28,10 +28,12 @@ API_URL = "https://clinicaltrials.gov/api/v2/studies"
 FINAL_STATUSES = ["COMPLETED", "TERMINATED", "WITHDRAWN", "SUSPENDED"]
 
 # Columns written to the CSV. `why_stopped` is collected for analysis only and
-# must NOT be used as a model feature (data leakage). See PROJECT-PLAN.md.
+# must NOT be used as a model feature (data leakage). `start_date` is used for
+# temporal train/test splits in external validation (not as a model feature).
 CSV_FIELDS = [
     "nct_id",
     "overall_status",
+    "start_date",
     "why_stopped",
     "brief_summary",
     "detailed_description",
@@ -66,6 +68,7 @@ def parse_study(study: dict[str, Any]) -> dict[str, Any]:
     return {
         "nct_id": _get(protocol, "identificationModule", "nctId"),
         "overall_status": _get(protocol, "statusModule", "overallStatus"),
+        "start_date": _get(protocol, "statusModule", "startDateStruct", "date"),
         "why_stopped": _get(protocol, "statusModule", "whyStopped"),
         "brief_summary": _get(protocol, "descriptionModule", "briefSummary"),
         "detailed_description": _get(protocol, "descriptionModule", "detailedDescription"),
