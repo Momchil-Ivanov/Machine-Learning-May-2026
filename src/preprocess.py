@@ -7,6 +7,7 @@ Responsibilities
 2. Merge the free-text fields into a single document.
 3. Remove leakage-prone sentences (those that reveal the outcome).
 4. Assemble simple tabular features.
+5. Pass through `start_date` when present (for temporal external validation).
 
 The leakage removal is controlled by a flag so we can later measure its effect
 in an ablation study (model trained with vs. without cleaning).
@@ -112,6 +113,8 @@ def preprocess(df: pd.DataFrame, remove_leakage: bool = True) -> pd.DataFrame:
     """Turn raw records into a clean, model-ready DataFrame."""
     result = pd.DataFrame(index=df.index)
     result["nct_id"] = df["nct_id"]
+    if "start_date" in df.columns:
+        result["start_date"] = df["start_date"].fillna("").astype(str)
     result["label"] = df["overall_status"].apply(make_label)
 
     # Keep only rows with a usable final outcome.
@@ -161,9 +164,12 @@ def main(argv: list[str] | None = None) -> int:
 
     pos = int((clean["label"] == 1).sum())
     neg = int((clean["label"] == 0).sum())
+    dated = int(clean["start_date"].astype(str).str.len().gt(0).sum()) if "start_date" in clean.columns else 0
     print(
         f"Wrote {len(clean)} rows to {args.output} "
-        f"(completed={pos}, not_completed={neg}, remove_leakage={remove_leakage})"
+        f"(completed={pos}, not_completed={neg}, remove_leakage={remove_leakage}"
+        + (f", with_start_date={dated}" if dated else "")
+        + ")"
     )
     return 0
 

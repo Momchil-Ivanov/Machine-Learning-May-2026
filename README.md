@@ -8,7 +8,7 @@ metadata from ClinicalTrials.gov.
 
 ## Approach
 
-- **Data:** ~2,000 trials downloaded via the ClinicalTrials.gov API v2
+- **Data:** ~3,000 trials downloaded via the ClinicalTrials.gov API v2 (includes `start_date` for temporal validation)
 - **Features:** TF-IDF bigrams on protocol text + structured metadata (phase, study type, enrollment count)
 - **Models:** Logistic Regression, Linear SVM, XGBoost
 - **Target:** Binary — `Completed` (1) vs `Terminated / Withdrawn / Suspended` (0)
@@ -47,8 +47,8 @@ clinical-trial-outcome/
 ```bash
 pip install -r requirements.txt
 
-# 1. Download data (~2000 trials)
-python src/fetch_data.py --output data/raw/trials.csv
+# 1. Download data (~3000 trials; start_date included for external validation)
+python src/fetch_data.py --limit 3000 --output data/raw/trials.csv
 
 # 2. Preprocess (leakage removal enabled by default)
 python src/preprocess.py --input data/raw/trials.csv --output data/processed/clean.csv
