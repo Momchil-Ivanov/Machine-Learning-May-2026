@@ -16,22 +16,32 @@ metadata from ClinicalTrials.gov.
 
 ## Results
 
-| Model | Macro F1 | PR-AUC |
-|---|---|---|
-| Logistic Regression | 0.60 | 0.93 |
-| Linear SVM | 0.46 | 0.93 |
-| **XGBoost (best)** | **0.77** | **0.95** |
+### Hold-out test (XGBoost hybrid, 80/20 split)
 
-Ablation study shows that structured metadata alone (Macro F1 = 0.72) outperforms
-text alone (Macro F1 = 0.51). Combining both features achieves the best overall
-performance.
+| Model | Macro F1 | PR-AUC | Recall (Terminated) |
+|---|---|---|---|
+| Logistic Regression | 0.64 | 0.94 | 0.43 |
+| Linear SVM | 0.46 | 0.93 | 0.00 |
+| **XGBoost (best)** | **0.72** | **0.95** | **0.40** |
+
+Ablation: tabular-only Macro F1 = **0.67**, text-only = **0.55**, hybrid = **0.72**.
+
+### Robustness and external validation (Sections 12–14)
+
+| Check | Macro F1 |
+|---|---|
+| 5-fold stratified CV | 0.76 ± 0.02 |
+| Text noise (30% word dropout) | 0.69 |
+| Temporal external (train ≤2018, test ≥2019) | 0.75 |
+
+Error analysis shows weakest recall on **phase-unspecified** trials (0.27).
 
 ## Repository Structure
 
 ```
 clinical-trial-outcome/
 ├── notebooks/
-│   └── main_analysis.ipynb   # Full analysis: EDA → models → ablation → conclusions
+│   └── main_analysis.ipynb   # EDA → models → ablation → validation → conclusions
 ├── src/
 │   ├── fetch_data.py          # Download trials from ClinicalTrials.gov API v2
 │   └── preprocess.py          # Clean, label, and featurise raw data
@@ -53,6 +63,6 @@ python src/fetch_data.py --limit 3000 --output data/raw/trials.csv
 # 2. Preprocess (leakage removal enabled by default)
 python src/preprocess.py --input data/raw/trials.csv --output data/processed/clean.csv
 
-# 3. Open and run the notebook
+# 3. Open and run the notebook (Kernel → Restart & Run All)
 jupyter notebook notebooks/main_analysis.ipynb
 ```
